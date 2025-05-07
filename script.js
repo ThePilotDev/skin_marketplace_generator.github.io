@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Elements
     const uploadArea = document.getElementById('upload-area');
     const fileInput = document.getElementById('file-input');
     const browseBtn = document.getElementById('browse-btn');
@@ -13,10 +14,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const packVersionInput = document.getElementById('pack-version');
     const loadingElement = document.getElementById('loading');
 
+    // State
     let currentSkinIndex = 0;
     let skins = [];
     let currentSkinData = null;
 
+    // Event Listeners
     uploadArea.addEventListener('click', () => fileInput.click());
     browseBtn.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', handleFileSelect);
@@ -26,6 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
     confirmSkinBtn.addEventListener('click', confirmSkinOptions);
     cancelSkinBtn.addEventListener('click', cancelSkinOptions);
 
+    // Functions
     function handleDragOver(e) {
         e.preventDefault();
         e.stopPropagation();
@@ -45,12 +49,11 @@ document.addEventListener('DOMContentLoaded', function() {
     function handleFileSelect(e) {
         if (e.target.files.length > 0) {
             handleFiles(e.target.files);
+            fileInput.value = ''; // Reset input to allow selecting the same file again
         }
     }
 
     function handleFiles(files) {
-        fileInput.value = '';
-
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
             if (file.type === 'image/png') {
@@ -72,8 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showSkinOptionsModal() {
-        const originalName = currentSkinData.file.name.replace(/\.png$/i, '');
-        skinNameInput.value = originalName;
+        skinNameInput.value = currentSkinData.file.name.replace('.png', '');
         skinOptionsModal.style.display = 'flex';
     }
 
@@ -111,7 +113,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const img = document.createElement('img');
         img.src = skin.dataUrl;
-        img.alt = skin.name;
 
         const nameSpan = document.createElement('span');
         nameSpan.className = 'skin-name';
@@ -156,11 +157,12 @@ document.addEventListener('DOMContentLoaded', function() {
         loadingElement.style.display = 'block';
         generateBtn.disabled = true;
 
+        // Simulate processing delay
         setTimeout(() => {
             createMcPackFile(packName, packDescription, packVersion);
             loadingElement.style.display = 'none';
             generateBtn.disabled = false;
-        }, 500);
+        }, 1500);
     }
 
     function createMcPackFile(packName, packDescription, packVersion) {
@@ -168,6 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const texturesFolder = zip.folder("textures");
         const textsFolder = zip.folder("texts");
 
+        // Create manifest.json
         const manifest = {
             "header": {
                 "name": packName,
@@ -184,6 +187,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         zip.file("manifest.json", JSON.stringify(manifest, null, 2));
 
+        // Create skins.json
         const skinsJson = {
             "skins": [],
             "serialize_name": packName.replace(/\s+/g, ''),
@@ -194,36 +198,51 @@ document.addEventListener('DOMContentLoaded', function() {
             skinsJson.skins.push({
                 "localization_name": `${skin.name}_${skin.armModel}`,
                 "geometry": `geometry.humanoid.${skin.armModel}`,
-                "texture": `textures/${skin.fileName}`,
+                "texture": skin.fileName,
                 "type": "free"
             });
 
+            // Add skin image to textures folder
             const base64Data = skin.dataUrl.replace(/^data:image\/png;base64,/, '');
             texturesFolder.file(skin.fileName, base64Data, { base64: true });
         });
 
         zip.file("skins.json", JSON.stringify(skinsJson, null, 2));
 
-        // Create contents.json
+        // Create contents.json (not always needed but included for completeness)
         const contents = {
             "version": 1,
-            "content": [
-                {"path": "manifest.json"},
-                {"path": "skins.json", "key": generateRandomKey()},
-                {"path": "texts/en_US.lang"},
-                {"path": "texts/languages.json"}
-            ]
+            "content": []
         };
+
+        // Add all files to contents.json
+        contents.content.push({
+            "path": "manifest.json"
+        });
+
+        contents.content.push({
+            "path": "skins.json",
+            "key": generateRandomKey()
+        });
 
         skins.forEach(skin => {
             contents.content.push({
-                "path": `textures/${skin.fileName}`,
+                "path": skin.fileName,
                 "key": generateRandomKey()
             });
         });
 
+        contents.content.push({
+            "path": "texts/en_US.lang"
+        });
+
+        contents.content.push({
+            "path": "texts/languages.json"
+        });
+
         zip.file("contents.json", JSON.stringify(contents, null, 2));
 
+        // Create languages.json
         const languages = ["en_US"];
         textsFolder.file("languages.json", JSON.stringify(languages));
 
@@ -236,6 +255,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         textsFolder.file("en_US.lang", langContent);
 
+        // Generate ZIP file
         zip.generateAsync({ type: 'blob' }).then(function(content) {
             const url = URL.createObjectURL(content);
             const a = document.createElement('a');
@@ -245,16 +265,6 @@ document.addEventListener('DOMContentLoaded', function() {
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-
-            skins = [];
-            skinPreviewContainer.innerHTML = '';
-            packNameInput.value = '';
-            packDescriptionInput.value = '';
-        }).catch(function(error) {
-            console.error('Error generating .mcpack:', error);
-            alert('Error generating skin pack. Please try again.');
-            loadingElement.style.display = 'none';
-            generateBtn.disabled = false;
         });
     }
 
