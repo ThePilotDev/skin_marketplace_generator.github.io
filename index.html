@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Skin Pack Creator</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Minecraft&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <h1>Minecraft Skin Pack Creator</h1>
+        <p>Create professional skin packs for Minecraft Bedrock Marketplace</p>
+    </header>
+
+    <div class="creator-box">
+        <div class="pack-info">
+            <h2>Pack Information</h2>
+            <div class="input-group">
+                <label for="pack-name">Pack Name:</label>
+                <input type="text" id="pack-name" placeholder="My Awesome Skin Pack">
+            </div>
+            <div class="input-group">
+                <label for="pack-description">Description:</label>
+                <textarea id="pack-description" placeholder="A collection of cool skins..."></textarea>
+            </div>
+            <div class="input-group">
+                <label for="pack-version">Version (e.g., 1.0.0):</label>
+                <input type="text" id="pack-version" value="1.0.0">
+            </div>
+        </div>
+
+        <div class="skin-upload">
+            <h2>Add Skins</h2>
+            <div class="upload-area" id="upload-area">
+                <p>Drag & drop skin images here or</p>
+                <button class="minecraft-button green" id="browse-btn">Browse Files</button>
+                <input type="file" id="file-input" multiple accept="image/png" style="display: none;">
+            </div>
+            <div id="skin-preview-container"></div>
+        </div>
+
+        <div class="actions">
+            <button class="minecraft-button green large" id="generate-btn">Generate .mcpack</button>
+            <div class="loading" id="loading" style="display: none;">
+                <div class="loading-bar"></div>
+                <p>Creating your skin pack...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="skin-options-modal">
+    <div class="modal-content">
+        <h3>Skin Options</h3>
+        <div class="input-group">
+            <label for="skin-name">Skin Name:</label>
+            <input type="text" id="skin-name" placeholder="My Skin">
+        </div>
+        <div class="input-group">
+            <label>Arm Model:</label>
+            <div class="radio-group">
+                <label>
+                    <input type="radio" name="arm-model" value="customSlim" checked>
+                    <span>Slim Arms</span>
+                </label>
+                <label>
+                    <input type="radio" name="arm-model" value="custom">
+                    <span>Wide Arms</span>
+                </label>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="minecraft-button green" id="confirm-skin-btn">Confirm</button>
+            <button class="minecraft-button red" id="cancel-skin-btn">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
